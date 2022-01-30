@@ -18,18 +18,18 @@ subtitle = ""
   icon = "map"
   icon_pack = "fas"
   name = "Geoprocessing tools"
-  description = "QGIS, PostGIS and R Spatial"  
+  description = "QGIS and R Spatial"  
 
 [[feature]]
   icon = "code"
   icon_pack = "fas"
   name = "Coding"
-  description = "R and SQL"
+  description = "R and Python"
   
 [[feature]]
   icon = "database"
   icon_pack = "fas"
   name = "Database"
-  description = "Postgres"
+  description = "MongoDB"
 
 +++

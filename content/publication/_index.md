@@ -1,4 +1,8 @@
 ---
-title: Publications in review
-view: 2
+cms_exclude: true
+header:
+  caption: ""
+  image: ""
+title: Publications
+view: 4
 ---

@@ -42,4 +42,4 @@ user_groups:
 
 I'm a data analyst, with a focus on using open source tools. Having an academic background in oceanography and geoprocessing, I have a passion to use geospatial tools to better understand the complexity of marine and coastal environments. My interests are also in integrating and tidying multiple datasets into structured databases and in automate common processes to improve and analyse spatial and temporal trends.
 
-I have a mix of experience working for governamental organizations, NGO's and academia, for more details, please have a look on my full [CV](/#files/CV) or check some of my past and ongoing [projects](/#projects). On [posts](/#posts) I share how I implemented some pieces of my work ttt.
+I have a mix of experience working for governamental organizations, NGO's and academia, for more details, please have a look on my full [CV](/#files/CV) or check some of my past and ongoing [projects](/#projects). On [posts](/#posts) I share how I implemented some pieces of my work.
