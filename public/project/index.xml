@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Projects | Jessica Leiria Schattschneider</title>
+    <link>/project/</link>
+      <atom:link href="/project/index.xml" rel="self" type="application/rss+xml" />
+    <description>Projects</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Wed, 27 Apr 2016 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/images/icon_hu0b7a4cb9992c9ac0e91bd28ffd38dd00_9727_512x512_fill_lanczos_center_2.png</url>
+      <title>Projects</title>
+      <link>/project/</link>
+    </image>
+    
+    <item>
+      <title>FOSS4G for Beach Litter Monitoring</title>
+      <link>/project/litter/</link>
+      <pubDate>Wed, 27 Apr 2016 00:00:00 +0000</pubDate>
+      <guid>/project/litter/</guid>
+      <description>&lt;p&gt;This project is a framework for a beach litter monitoring, based on free and open-source software (FOSS), which allows adjustments for any sampling design. The framework was developed by means of a GIS-project (QGIS), a GIS-collector (QField), and an R code, allowing further adjustments according to the area to be surveyed, and research questions. All facilities are FOSS, not implying any costs. The aim is to improve data collection, accessibility, and interoperability, and to help to fill the current existing gap between fieldwork and data analysis, preventing typos and allowing better data processing.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;./methodology.png&#34; alt=&#34;My picture&#34;&gt;
+&lt;em&gt;Image 1. The mobile-app QField in the fieldwork. (a) Record the item; (b–c) fill the attributes.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Therefore, less than an hour is expected from ending the fieldwork to the resulting up-to-date products. Results obtained from the open-source geospatial framework application produces baseline information on beach litter issues, such as amounts, sources, spatial and temporal patterns.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;./result.png&#34; alt=&#34;My picture&#34;&gt;
+&lt;em&gt;Image 2. Summary of graphical and descriptive results and the questions that these individual products respond. Colours are related to different polluting-activities, capital letters (A, B, C) represents different sites, and lower case letters (a, b) different beach areas.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;The adoption of the framework can facilitate the data collection by local and regional councils as it dispense any financial investments, and the results obtained from it can be applied to base management strategies. For researchers, it produces spatialized data from each item in tidy forms.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;./code.png&#34; alt=&#34;My picture&#34;&gt;
+&lt;em&gt;Image 3. Coloured cells indicate the steps to be run in the code, depending on the users purpose (reproduce results; first input of data; or, second data input onwards).&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;This project was submitted to the Environmental Monitoring and Assessment Journal (Manuscript status: &lt;em&gt;in review&lt;/em&gt;) and the full code is available  
+&lt;a href=&#34;https://github.com/JesSchattschneider/litter/blob/master/ReproducibleRcodeLitter.R&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Measuring the coastal complexity</title>
+      <link>/project/internal-project/</link>
+      <pubDate>Wed, 27 Apr 2016 00:00:00 +0000</pubDate>
+      <guid>/project/internal-project/</guid>
+      <description>&lt;p&gt;The coastline is the limit between the terrestrial and the maritime environment reflecting in its
+shape the interaction of continental and marine processes, presenting it as an interesting
+feature for coastal characterization. In this sense, this current project analyses by quantitative
+descriptors the morphological complexity of the south-southest brazilian coastline. Three
+different techniques are used to reach this objective, two of them are based in fractal theory
+and one in angular variation. The whole methodology is based in a reproducible R-code using public databases. In the characterization using fractal methods, the complexity of four
+coastline compartments of the study are measured by the fractal dimension (D). The adjustment of the fractal curve (R2) and the type of data used indicates that the step-divisor is the best method in this case. In a second moment of this project, the Angular Measurement Technique (AMT) is applied to the coastline without a previous compartmentalization, reaching to classify coastline segments in complexity classes. Nine different scale lengths (S) we considered in an hierarchic cluster indicating that the strudy area can be classified in four different complexity groups. Segments classified by Group 01 have low complexity being associated to straight coastline, Group 02 has an
+intermediate complexity while Group 03 and 04 have a higher complexity being segments of
+Group 04 normally associated to headlands and bays. Additionally,the relationship between
+this morphological classification is compared to the variability four coastal descriptors, the
+lithological diversity, the concentration of structural faults and the submerged and emerged
+slope.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;./coastalComplexity.png&#34; alt=&#34;My picture&#34;&gt;
+&lt;em&gt;Image 1. Methodological framework with a general visualisation of the input data in the first row (lithology, geological faults and bathimetric and topographic data, respectively), and on the second row is a sampled of the scheme used to obtain the four coastal descriptor for each costal segment (Shannon index, concentration of faults, submerged and emerged slope, respectively).&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Principal Component Analysis (PCA) shows that the lithological diversity and the
+concentration of faults control the coastline morphology in the scale evaluated by this study,
+possibly reflecting the influence of the Serra do Mar proximity in some segments. However,
+the smoothed curve of each complexity group obtained by the generalized additive model
+(GAM) from the individual bathymetric and altimetric profiles shows a variation between the
+pattern observed for each group, indicating a relation with the morphological expression of
+the coastline.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;./pca.png#center&#34; alt=&#34;My picture&#34;&gt;
+&lt;em&gt;Image 2. Principal Component Analysis for the four complexity groups (represented by points) in relations to the four coastal descriptors (represented by arrows being translated from portuguese to english as follow: Decliv. Sub = Submerged Slope; Decliv. Emersa = Emerged Slope; Div. Geo = Shannon Index; Conc. Falhas = Fault Concentration). This analysis highlights the geological diversity on controlling the morphological expression of the coastline in mesoscale&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;The full dataset and the final code are freely available in my 
+&lt;a href=&#34;https://github.com/JesSchattschneider/Dissertation.git&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;github&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

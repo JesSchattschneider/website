@@ -1,0 +1,179 @@
+---
+title: "How to Compare Monitoring Effort Between Latitudinal Sectors"
+author: "Jessica Leiria Schattschneider"
+output:
+  blogdown::html_page:
+    toc: true
+image:
+  caption: 'Image credit: [**Unsplash**](https://unsplash.com/photos/CpkOjOcXdUY)'
+  focal_point: ""
+  placement: 2
+  preview_only: false
+date: "2020-05-06"
+categories: ["R"]
+tags: ["coastal monitoring", "how to", "biological data"]
+summary: "How to compare monitoring effort between latitudinal sectors"
+subtitle: "" 
+---
+
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/jquery/jquery.min.js"></script>
+<link href="/rmarkdown-libs/leaflet/leaflet.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/leaflet/leaflet.js"></script>
+<link href="/rmarkdown-libs/leafletfix/leafletfix.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/Proj4Leaflet/proj4-compressed.js"></script>
+<script src="/rmarkdown-libs/Proj4Leaflet/proj4leaflet.js"></script>
+<link href="/rmarkdown-libs/rstudio_leaflet/rstudio_leaflet.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/leaflet-binding/leaflet.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#motivation">Motivation</a></li>
+<li><a href="#data-available">Data available:</a></li>
+<li><a href="#code-structure">Code structure:</a></li>
+<li><a href="#starting-to-code">Starting to code</a><ul>
+<li><a href="#part-01---create-a-function">Part 01 - Create a function</a></li>
+<li><a href="#part-02---create-20-coastal-sectors">Part 02 - Create 20 coastal sectors</a></li>
+<li><a href="#part-03---fix-geometries-intersection-and-calculate-the-monitoring-effort-on-each-coastal-sectors">Part 03 - Fix geometries intersection and calculate the monitoring effort on each coastal sectors</a></li>
+</ul></li>
+</ul>
+</div>
+
+<div id="motivation" class="section level1">
+<h1>Motivation</h1>
+<p>Compare the beach length monitored along 20 latitudinal sector of equal area.</p>
+</div>
+<div id="data-available" class="section level1">
+<h1>Data available:</h1>
+<p>10 individual coastline segments (shapefile format) located in different sub-directories</p>
+</div>
+<div id="code-structure" class="section level1">
+<h1>Code structure:</h1>
+<p>Part 01 - Create a function to open all dataset and merge them into one spatial layer.</p>
+<p>Part 02 - Create a new spatial layer with the 20 latitudinal sectors using the total extention of the monitored area.</p>
+<p>Part 03 - Deal with geometries intersection and calculate the total length of all segments within the each sector.</p>
+</div>
+<div id="starting-to-code" class="section level1">
+<h1>Starting to code</h1>
+<pre class="r"><code># Load libraries
+library(mapview)
+library(tidyverse)
+library(sf)</code></pre>
+<div id="part-01---create-a-function" class="section level2">
+<h2>Part 01 - Create a function</h2>
+<p>Here, the objective is to create a function that can store in a list all spatial features of interest. The first step is to create an initial list with all the subdirectories containing the spatial features. In this case, all files have the suffix “linha.shp” which was used to set the list pattern:</p>
+<pre class="r"><code># create a list to be populated with all subdirectories containing the pattern &quot;linha.shp&quot; :
+ff &lt;- as.list(list.files(path=&quot;./&quot;, pattern=&quot;linha.shp$&quot;, recursive=TRUE, full.names=TRUE))</code></pre>
+<p>Now we have a list with the individual directory for each of the 10 spatial features that can be imported to the R environment with the following fuction:</p>
+<pre class="r"><code>## Function to open the shps in subdirectories
+open_shp &lt;- function(ff){
+  linha &lt;- st_read(ff[i])
+  linha
+}</code></pre>
+<p>Loop the function over the list of subdirectories to return a final list with all spatial features:</p>
+<pre class="r"><code>## A looping creating a list with all shapefiles
+linhas = list()
+for (i in 1:length(ff)) {
+  linhas[[i]] &lt;- open_shp(ff)
+}</code></pre>
+<p>Finish this step merging all line segments into one feature and setting the right CRS and geometry column</p>
+<pre class="r"><code># Merge all monitoring lines in one shapefile
+merged.lines &lt;- linhas %&gt;% do.call(rbind, .)
+merged.lines &lt;-do.call(rbind,lapply(1:nrow(merged.lines),function(i){st_cast(merged.lines[i,],&quot;LINESTRING&quot;)}))</code></pre>
+</div>
+<div id="part-02---create-20-coastal-sectors" class="section level2">
+<h2>Part 02 - Create 20 coastal sectors</h2>
+<p>There is no spatial feature with the coastal sectors so this needs to be created. In this case, the whole monitored region needs to be divided in 20 sectors of same area, so the first step here is to find the latitudinal and longitudinal extention for these sectors:</p>
+<pre class="r"><code>
+  ## Find the latitudinal (m) and longitudinal (n) extention:
+n&lt;-diff(st_bbox(merged.lines)[c(2, 4)])/20  ## calculate the total latitude extension and divide per 20 (sectors)
+                                            ## CHANGE THE NUMBER HERE IF YOU WANT A MORE REFINED ANALYSIS!!
+
+m&lt;-diff(st_bbox(merged.lines)[c(1, 3)])     ## calculate the total longitudinal area monitored</code></pre>
+<p>Create the 20 coastal sectors by dividing the total area monitored and m and n as parameters</p>
+<pre class="r"><code>## create 20 latitudinal sectors based on merged.lines extend
+sectors&lt;-st_as_sf(st_make_grid(st_combine(merged.lines), cellsize = c(m,n)))
+sectors$id &lt;- 1:nrow(sectors)                           ## create an identifier for each sector
+sectors &lt;- sectors %&gt;% st_cast(&quot;MULTIPOLYGON&quot;)          ## define sectors as a multipolygon feature
+
+## create a multiline feature based on &quot;sectors&quot; id limits:
+sectors_lines &lt;- st_cast(sectors, &quot;MULTILINESTRING&quot;, group_or_split = FALSE)</code></pre>
+</div>
+<div id="part-03---fix-geometries-intersection-and-calculate-the-monitoring-effort-on-each-coastal-sectors" class="section level2">
+<h2>Part 03 - Fix geometries intersection and calculate the monitoring effort on each coastal sectors</h2>
+<p>Some of the monitored coastline segments intersect more than one coastal sector, and this fact can cause confusion to the analysis. In order to fix it, this segments must be indentified and split using the sector intersection.</p>
+<p>First thing to do is check for unvalid segments:</p>
+<pre class="r"><code># Check if there is any invalid geometry
+count(filter(merged.lines, compriment == 0))  ## the variable &quot;compriment&quot; correspond to the segment lenght in                                                  ## meters. If this value is equal to 0 this means that the geometry                                               ## can be removed from the analysis
+## Simple feature collection with 1 feature and 1 field (with 1 geometry empty)
+## geometry type:  LINESTRING
+## dimension:      XY
+## bbox:           xmin: NA ymin: NA xmax: NA ymax: NA
+## proj4string:    +proj=longlat +ellps=GRS80 +no_defs 
+## # A tibble: 1 x 2
+##       n         geometry
+##   &lt;int&gt; &lt;LINESTRING [°]&gt;
+## 1    48            EMPTY</code></pre>
+<p>Knowing that there are 48 unvalid segments, they will need to be filtered out from the analysis. To perform the intersection analysis we will need to transform <em>Simple Features</em> to <em>Spatial Lines DataFrames</em> with the function <em>as_Spatial</em> in the <a href="https://cran.r-project.org/web/packages/sf/index.html">sf</a>. With this transformation the function <em>gIntersection</em> in the <a href="https://cran.r-project.org/web/packages/rgeos/index.html">rgeos</a> can be used to identify the intersections, and then finally transform it back to a <em>Simple Features</em> to perform a spatial join with with the feature grid, importing the “Id” value for each segment.</p>
+<pre class="r"><code>library(rgeos)
+gridS &lt;- sf:::as_Spatial(st_transform(sectors, 5641))
+lineS &lt;- sf:::as_Spatial(st_transform(filter(merged.lines, compriment != 0), 5641))
+clipLine &lt;- gIntersection(lineS, gridS, byid = TRUE)
+clipLine &lt;- clipLine %&gt;% st_as_sf() %&gt;% st_join(left = FALSE, (st_as_sf(gridS))[&quot;id&quot;]) # join points</code></pre>
+<p>With the new summarized feature it is possible to calculate the individual lenght of each new segment (without intersection between different latitudinal sectors) summarizing the total length per sector which will populate a new a column named “tot_monitored length” in the initial sector feature.</p>
+<pre class="r"><code>## Calculate individual segment lengths for the new summarized feature
+clipLine$length &lt;- as.numeric(st_length(clipLine))/1000
+## Add the total monitored length for each sector
+sector_monit_length &lt;- clipLine %&gt;% group_by(id) %&gt;% summarise(tot_monitored_lenght = sum(length))
+sectors&lt;-merge(sectors, st_drop_geometry(sector_monit_length), by = &quot;id&quot;,all.x=TRUE) ## update the &quot;sector&quot; layer</code></pre>
+<p>Visualise the result:</p>
+<pre class="r"><code>## Check the five sectors with the highest monitoring effort:
+head(sectors[order(sectors$tot_monitored_lenght, decreasing = TRUE),])
+## Simple feature collection with 6 features and 2 fields
+## geometry type:  MULTIPOLYGON
+## dimension:      XY
+## bbox:           xmin: -48.76622 ymin: -26.6892 xmax: -44.78347 ymax: -23.3344
+## proj4string:    +proj=longlat +ellps=GRS80 +no_defs 
+##    id tot_monitored_lenght                       geometry
+## 19 19             95.90087 MULTIPOLYGON (((-48.76622 -...
+## 15 15             75.79817 MULTIPOLYGON (((-48.76622 -...
+## 18 18             67.32648 MULTIPOLYGON (((-48.76622 -...
+## 8   8             60.79107 MULTIPOLYGON (((-48.76622 -...
+## 20 20             57.19828 MULTIPOLYGON (((-48.76622 -...
+## 11 11             55.33324 MULTIPOLYGON (((-48.76622 -...
+
+## Check the five sectors with the lowest monitoring effort:
+head(sectors[order(sectors$tot_monitored_lenght, decreasing = FALSE),])
+## Simple feature collection with 6 features and 2 fields
+## geometry type:  MULTIPOLYGON
+## dimension:      XY
+## bbox:           xmin: -48.76622 ymin: -28.23757 xmax: -44.78347 ymax: -24.36664
+## proj4string:    +proj=longlat +ellps=GRS80 +no_defs 
+##    id tot_monitored_lenght                       geometry
+## 5   5             13.69308 MULTIPOLYGON (((-48.76622 -...
+## 13 13             18.32505 MULTIPOLYGON (((-48.76622 -...
+## 2   2             23.05482 MULTIPOLYGON (((-48.76622 -...
+## 16 16             24.33563 MULTIPOLYGON (((-48.76622 -...
+## 3   3             24.76599 MULTIPOLYGON (((-48.76622 -...
+## 4   4             29.84013 MULTIPOLYGON (((-48.76622 -...</code></pre>
+<p>Finally, we can spatially visualise the difference between each latitudinal sectors with the ones with less monitoiring efforts represented in red and the ones with more effots represented in green:</p>
+<pre class="r"><code>library(leaflet)
+bins &lt;- c(0, 10, 20, 30, 50, 70, 100, Inf)
+pal &lt;- colorBin(&quot;RdYlGn&quot;, domain = sectors$tot_monitored_lenght, bins = bins)
+
+leaflet(sf:::as_Spatial(sectors)) %&gt;% addTiles() %&gt;% 
+  addPolygons(color = &quot;#444444&quot;, weight = 1, smoothFactor = 0.5,
+              opacity = 1.0, fillOpacity = 0.5,
+              fillColor = ~pal(tot_monitored_lenght),
+              highlightOptions = highlightOptions(color = &quot;white&quot;, weight = 2,
+                                                  bringToFront = TRUE),
+              popup = ~tot_monitored_lenght 
+             )</code></pre>
+<div id="htmlwidget-1" style="width:672px;height:480px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addPolygons","args":[[[[{"lng":[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],"lat":[-28.495636824,-28.23757476575,-28.23757476575,-28.495636824,-28.495636824]}]],[[{"lng":[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],"lat":[-28.23757476575,-27.9795127075,-27.9795127075,-28.23757476575,-28.23757476575]}]],[[{"lng":[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],"lat":[-27.9795127075,-27.72145064925,-27.72145064925,-27.9795127075,-27.9795127075]}]],[[{"lng":[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],"lat":[-27.72145064925,-27.463388591,-27.463388591,-27.72145064925,-27.72145064925]}]],[[{"lng":[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],"lat":[-27.463388591,-27.20532653275,-27.20532653275,-27.463388591,-27.463388591]}]],[[{"lng":[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],"lat":[-27.20532653275,-26.9472644745,-26.9472644745,-27.20532653275,-27.20532653275]}]],[[{"lng":[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],"lat":[-26.9472644745,-26.68920241625,-26.68920241625,-26.9472644745,-26.9472644745]}]],[[{"lng":[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],"lat":[-26.68920241625,-26.431140358,-26.431140358,-26.68920241625,-26.68920241625]}]],[[{"lng":[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],"lat":[-26.431140358,-26.17307829975,-26.17307829975,-26.431140358,-26.431140358]}]],[[{"lng":[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],"lat":[-26.17307829975,-25.9150162415,-25.9150162415,-26.17307829975,-26.17307829975]}]],[[{"lng":[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],"lat":[-25.9150162415,-25.65695418325,-25.65695418325,-25.9150162415,-25.9150162415]}]],[[{"lng":[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],"lat":[-25.65695418325,-25.398892125,-25.398892125,-25.65695418325,-25.65695418325]}]],[[{"lng":[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],"lat":[-25.398892125,-25.1408300667499,-25.1408300667499,-25.398892125,-25.398892125]}]],[[{"lng":[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],"lat":[-25.1408300667499,-24.8827680084999,-24.8827680084999,-25.1408300667499,-25.1408300667499]}]],[[{"lng":[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],"lat":[-24.8827680084999,-24.6247059502499,-24.6247059502499,-24.8827680084999,-24.8827680084999]}]],[[{"lng":[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],"lat":[-24.6247059502499,-24.3666438919999,-24.3666438919999,-24.6247059502499,-24.6247059502499]}]],[[{"lng":[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],"lat":[-24.3666438919999,-24.1085818337499,-24.1085818337499,-24.3666438919999,-24.3666438919999]}]],[[{"lng":[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],"lat":[-24.1085818337499,-23.8505197754999,-23.8505197754999,-24.1085818337499,-24.1085818337499]}]],[[{"lng":[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],"lat":[-23.8505197754999,-23.5924577172499,-23.5924577172499,-23.8505197754999,-23.8505197754999]}]],[[{"lng":[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],"lat":[-23.5924577172499,-23.3343956589999,-23.3343956589999,-23.5924577172499,-23.5924577172499]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#444444","weight":1,"opacity":1,"fill":true,"fillColor":["#FFFFBF","#FEE08B","#FEE08B","#FEE08B","#FC8D59","#FFFFBF","#FFFFBF","#D9EF8B","#D9EF8B","#FFFFBF","#D9EF8B","#FFFFBF","#FC8D59","#FFFFBF","#91CF60","#FEE08B","#FFFFBF","#D9EF8B","#91CF60","#D9EF8B"],"fillOpacity":0.5,"smoothFactor":0.5,"noClip":false},[35.8184353617669,23.0548167133741,24.7659886378299,29.8401270105745,13.6930840988839,30.5516372036213,36.7594831582133,60.7910667641981,50.0842901975882,36.9351111597452,55.3332414110109,38.1979140008277,18.3250478238633,30.8284978709684,75.7981702017037,24.3356256501222,47.2113847758834,67.3264811059651,95.9008672690657,57.198284556616],null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},{"color":"white","weight":2,"bringToFront":true}]}],"limits":{"lat":[-28.495636824,-23.3343956589999],"lng":[-48.7662226649999,-44.783474665]}},"evals":[],"jsHooks":[]}</script>
+<pre class="r"><code>#m %&gt;% addLegend(pal = pal, values = ~tot_monitored_lenght, opacity = 0.7, title = NULL,
+#  position = &quot;bottomright&quot;)</code></pre>
+<p>With the end of this code we have a spatial visualisation that tells the sectors with a higher (red polygons) and lower (light yellow polygons) monitoring effort. This result can be saved in a new shapefile and opened in any other geospatial software:</p>
+<pre class="r"><code># st_write(sectors,&quot;./sectors.shp&quot;)  ## saving the sectors as a .shp</code></pre>
+</div>
+</div>

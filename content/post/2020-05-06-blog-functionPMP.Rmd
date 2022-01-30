@@ -1,0 +1,165 @@
+---
+title: "How to Compare Monitoring Effort Between Latitudinal Sectors"
+author: "Jessica Leiria Schattschneider"
+output:
+  blogdown::html_page:
+    toc: true
+image:
+  caption: 'Image credit: [**Unsplash**](https://unsplash.com/photos/CpkOjOcXdUY)'
+  focal_point: ""
+  placement: 2
+  preview_only: false
+date: "2020-05-06"
+categories: ["R"]
+tags: ["coastal monitoring", "how to", "biological data"]
+summary: "How to compare monitoring effort between latitudinal sectors"
+subtitle: "" 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE)
+```
+
+# Motivation
+Compare the beach length monitored along 20 latitudinal sector of equal area.
+
+# Data available:
+10 individual coastline segments (shapefile format) located in different sub-directories
+
+# Code structure:
+Part 01 - Create a function to open all dataset and merge them into one spatial layer.
+
+Part 02 - Create a new spatial layer with the 20 latitudinal sectors using the total extention of the monitored area.
+
+Part 03 - Deal with geometries intersection and calculate the total length of all segments within the each sector.
+
+# Starting to code
+
+```{r, message = FALSE}
+# Load libraries
+library(mapview)
+library(tidyverse)
+library(sf)
+```
+
+## Part 01 - Create a function
+Here, the objective is to create a function that can store in a list all spatial features of interest. The first step is to create an initial list with all the subdirectories containing the spatial features. In this case, all files have the suffix "linha.shp" which was used to set the list pattern:
+
+```{r, message=FALSE}
+# create a list to be populated with all subdirectories containing the pattern "linha.shp" :
+ff <- as.list(list.files(path="./", pattern="linha.shp$", recursive=TRUE, full.names=TRUE))
+```
+
+Now we have a list with the individual directory for each of the 10 spatial features that can be imported to the R environment with the following fuction:
+
+```{r, message=FALSE}
+## Function to open the shps in subdirectories
+open_shp <- function(ff){
+  linha <- st_read(ff[i])
+  linha
+}
+```
+
+Loop the function over the list of subdirectories to return a final list with all spatial features: 
+
+```{r, message=FALSE, warning= FALSE, echo=TRUE, results=FALSE}
+## A looping creating a list with all shapefiles
+linhas = list()
+for (i in 1:length(ff)) {
+  linhas[[i]] <- open_shp(ff)
+}
+```
+
+Finish this step merging all line segments into one feature and setting the right CRS and geometry column
+
+```{r, message=FALSE, warning = FALSE}
+# Merge all monitoring lines in one shapefile
+merged.lines <- linhas %>% do.call(rbind, .)
+merged.lines <-do.call(rbind,lapply(1:nrow(merged.lines),function(i){st_cast(merged.lines[i,],"LINESTRING")}))
+```
+
+## Part 02 - Create 20 coastal sectors #### 
+There is no spatial feature with the coastal sectors so this needs to be created. In this case, the whole monitored region needs to be divided in 20 sectors of same area, so the first step here is to find the latitudinal and longitudinal extention for these sectors:
+
+```{r, message=FALSE, warning = FALSE}
+
+  ## Find the latitudinal (m) and longitudinal (n) extention:
+n<-diff(st_bbox(merged.lines)[c(2, 4)])/20  ## calculate the total latitude extension and divide per 20 (sectors)
+                                            ## CHANGE THE NUMBER HERE IF YOU WANT A MORE REFINED ANALYSIS!!
+
+m<-diff(st_bbox(merged.lines)[c(1, 3)])     ## calculate the total longitudinal area monitored
+```
+
+Create the 20 coastal sectors by dividing the total area monitored and m and n as parameters
+```{r, message=FALSE, warning = FALSE}
+## create 20 latitudinal sectors based on merged.lines extend
+sectors<-st_as_sf(st_make_grid(st_combine(merged.lines), cellsize = c(m,n)))
+sectors$id <- 1:nrow(sectors)                           ## create an identifier for each sector
+sectors <- sectors %>% st_cast("MULTIPOLYGON")          ## define sectors as a multipolygon feature
+
+## create a multiline feature based on "sectors" id limits:
+sectors_lines <- st_cast(sectors, "MULTILINESTRING", group_or_split = FALSE)
+```
+
+## Part 03 - Fix geometries intersection and calculate the monitoring effort on each coastal sectors #### 
+Some of the monitored coastline segments intersect more than one coastal sector, and this fact can cause confusion to the analysis. In order to fix it, this segments must be indentified and split using the sector intersection.
+
+First thing to do is check for unvalid segments:
+```{r, message = T}
+# Check if there is any invalid geometry
+count(filter(merged.lines, compriment == 0))  ## the variable "compriment" correspond to the segment lenght in                                                  ## meters. If this value is equal to 0 this means that the geometry                                               ## can be removed from the analysis
+```
+
+Knowing that there are 48 unvalid segments, they will need to be filtered out from the analysis. To perform the intersection analysis we will need to transform *Simple Features* to *Spatial Lines DataFrames* with the function *as_Spatial* in the [sf](https://cran.r-project.org/web/packages/sf/index.html). With this transformation the function *gIntersection* in the [rgeos](https://cran.r-project.org/web/packages/rgeos/index.html) can be used to identify the intersections, and then finally transform it back to a *Simple Features* to perform a spatial join with with the feature grid, importing the "Id" value for each segment.
+
+```{r, message = F, warning = F}
+library(rgeos)
+gridS <- sf:::as_Spatial(st_transform(sectors, 5641))
+lineS <- sf:::as_Spatial(st_transform(filter(merged.lines, compriment != 0), 5641))
+clipLine <- gIntersection(lineS, gridS, byid = TRUE)
+clipLine <- clipLine %>% st_as_sf() %>% st_join(left = FALSE, (st_as_sf(gridS))["id"]) # join points
+```
+
+With the new summarized feature it is possible to calculate the individual lenght of each new segment (without intersection between different latitudinal sectors) summarizing the total length per sector which will populate a new a column named "tot_monitored length" in the initial sector feature. 
+```{r}
+## Calculate individual segment lengths for the new summarized feature
+clipLine$length <- as.numeric(st_length(clipLine))/1000
+## Add the total monitored length for each sector
+sector_monit_length <- clipLine %>% group_by(id) %>% summarise(tot_monitored_lenght = sum(length))
+sectors<-merge(sectors, st_drop_geometry(sector_monit_length), by = "id",all.x=TRUE) ## update the "sector" layer
+```
+
+Visualise the result:
+
+```{r}
+## Check the five sectors with the highest monitoring effort:
+head(sectors[order(sectors$tot_monitored_lenght, decreasing = TRUE),])
+
+## Check the five sectors with the lowest monitoring effort:
+head(sectors[order(sectors$tot_monitored_lenght, decreasing = FALSE),])
+
+```
+
+Finally, we can spatially visualise the difference between each latitudinal sectors with the ones with less monitoiring efforts represented in red and the ones with more effots represented in green:  
+
+```{r}
+library(leaflet)
+bins <- c(0, 10, 20, 30, 50, 70, 100, Inf)
+pal <- colorBin("RdYlGn", domain = sectors$tot_monitored_lenght, bins = bins)
+
+leaflet(sf:::as_Spatial(sectors)) %>% addTiles() %>% 
+  addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+              opacity = 1.0, fillOpacity = 0.5,
+              fillColor = ~pal(tot_monitored_lenght),
+              highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                  bringToFront = TRUE),
+              popup = ~tot_monitored_lenght 
+             )
+#m %>% addLegend(pal = pal, values = ~tot_monitored_lenght, opacity = 0.7, title = NULL,
+#  position = "bottomright")
+```
+
+With the end of this code we have a spatial visualisation that tells the sectors with a higher (red polygons) and lower (light yellow polygons) monitoring effort. This result can be saved in a new shapefile and opened in any other geospatial software:
+```{r}
+# st_write(sectors,"./sectors.shp")  ## saving the sectors as a .shp
+```

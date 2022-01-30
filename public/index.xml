@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Jessica Leiria Schattschneider</title>
+    <link>/</link>
+      <atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    <description>Jessica Leiria Schattschneider</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Thu, 28 Jun 2018 00:00:00 +0100</lastBuildDate>
+    <image>
+      <url>/images/icon_hu0b7a4cb9992c9ac0e91bd28ffd38dd00_9727_512x512_fill_lanczos_center_2.png</url>
+      <title>Jessica Leiria Schattschneider</title>
+      <link>/</link>
+    </image>
+    
+    <item>
+      <title>How to Compare Monitoring Effort Between Latitudinal Sectors</title>
+      <link>/post/2020-05-06-blog-functionpmp/</link>
+      <pubDate>Wed, 06 May 2020 00:00:00 +0000</pubDate>
+      <guid>/post/2020-05-06-blog-functionpmp/</guid>
+      <description>
+&lt;script src=&#34;/rmarkdown-libs/htmlwidgets/htmlwidgets.js&#34;&gt;&lt;/script&gt;
+&lt;script src=&#34;/rmarkdown-libs/jquery/jquery.min.js&#34;&gt;&lt;/script&gt;
+&lt;link href=&#34;/rmarkdown-libs/leaflet/leaflet.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;/rmarkdown-libs/leaflet/leaflet.js&#34;&gt;&lt;/script&gt;
+&lt;link href=&#34;/rmarkdown-libs/leafletfix/leafletfix.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;/rmarkdown-libs/Proj4Leaflet/proj4-compressed.js&#34;&gt;&lt;/script&gt;
+&lt;script src=&#34;/rmarkdown-libs/Proj4Leaflet/proj4leaflet.js&#34;&gt;&lt;/script&gt;
+&lt;link href=&#34;/rmarkdown-libs/rstudio_leaflet/rstudio_leaflet.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;/rmarkdown-libs/leaflet-binding/leaflet.js&#34;&gt;&lt;/script&gt;
+
+&lt;div id=&#34;TOC&#34;&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;#motivation&#34;&gt;Motivation&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#data-available&#34;&gt;Data available:&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#code-structure&#34;&gt;Code structure:&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#starting-to-code&#34;&gt;Starting to code&lt;/a&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;#part-01---create-a-function&#34;&gt;Part 01 - Create a function&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#part-02---create-20-coastal-sectors&#34;&gt;Part 02 - Create 20 coastal sectors&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#part-03---fix-geometries-intersection-and-calculate-the-monitoring-effort-on-each-coastal-sectors&#34;&gt;Part 03 - Fix geometries intersection and calculate the monitoring effort on each coastal sectors&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;div id=&#34;motivation&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Motivation&lt;/h1&gt;
+&lt;p&gt;Compare the beach length monitored along 20 latitudinal sector of equal area.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;data-available&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Data available:&lt;/h1&gt;
+&lt;p&gt;10 individual coastline segments (shapefile format) located in different sub-directories&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;code-structure&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Code structure:&lt;/h1&gt;
+&lt;p&gt;Part 01 - Create a function to open all dataset and merge them into one spatial layer.&lt;/p&gt;
+&lt;p&gt;Part 02 - Create a new spatial layer with the 20 latitudinal sectors using the total extention of the monitored area.&lt;/p&gt;
+&lt;p&gt;Part 03 - Deal with geometries intersection and calculate the total length of all segments within the each sector.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;starting-to-code&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Starting to code&lt;/h1&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Load libraries
+library(mapview)
+library(tidyverse)
+library(sf)&lt;/code&gt;&lt;/pre&gt;
+&lt;div id=&#34;part-01---create-a-function&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Part 01 - Create a function&lt;/h2&gt;
+&lt;p&gt;Here, the objective is to create a function that can store in a list all spatial features of interest. The first step is to create an initial list with all the subdirectories containing the spatial features. In this case, all files have the suffix “linha.shp” which was used to set the list pattern:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# create a list to be populated with all subdirectories containing the pattern &amp;quot;linha.shp&amp;quot; :
+ff &amp;lt;- as.list(list.files(path=&amp;quot;./&amp;quot;, pattern=&amp;quot;linha.shp$&amp;quot;, recursive=TRUE, full.names=TRUE))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now we have a list with the individual directory for each of the 10 spatial features that can be imported to the R environment with the following fuction:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;## Function to open the shps in subdirectories
+open_shp &amp;lt;- function(ff){
+  linha &amp;lt;- st_read(ff[i])
+  linha
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Loop the function over the list of subdirectories to return a final list with all spatial features:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;## A looping creating a list with all shapefiles
+linhas = list()
+for (i in 1:length(ff)) {
+  linhas[[i]] &amp;lt;- open_shp(ff)
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Finish this step merging all line segments into one feature and setting the right CRS and geometry column&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Merge all monitoring lines in one shapefile
+merged.lines &amp;lt;- linhas %&amp;gt;% do.call(rbind, .)
+merged.lines &amp;lt;-do.call(rbind,lapply(1:nrow(merged.lines),function(i){st_cast(merged.lines[i,],&amp;quot;LINESTRING&amp;quot;)}))&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;part-02---create-20-coastal-sectors&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Part 02 - Create 20 coastal sectors&lt;/h2&gt;
+&lt;p&gt;There is no spatial feature with the coastal sectors so this needs to be created. In this case, the whole monitored region needs to be divided in 20 sectors of same area, so the first step here is to find the latitudinal and longitudinal extention for these sectors:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;
+  ## Find the latitudinal (m) and longitudinal (n) extention:
+n&amp;lt;-diff(st_bbox(merged.lines)[c(2, 4)])/20  ## calculate the total latitude extension and divide per 20 (sectors)
+                                            ## CHANGE THE NUMBER HERE IF YOU WANT A MORE REFINED ANALYSIS!!
+
+m&amp;lt;-diff(st_bbox(merged.lines)[c(1, 3)])     ## calculate the total longitudinal area monitored&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Create the 20 coastal sectors by dividing the total area monitored and m and n as parameters&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;## create 20 latitudinal sectors based on merged.lines extend
+sectors&amp;lt;-st_as_sf(st_make_grid(st_combine(merged.lines), cellsize = c(m,n)))
+sectors$id &amp;lt;- 1:nrow(sectors)                           ## create an identifier for each sector
+sectors &amp;lt;- sectors %&amp;gt;% st_cast(&amp;quot;MULTIPOLYGON&amp;quot;)          ## define sectors as a multipolygon feature
+
+## create a multiline feature based on &amp;quot;sectors&amp;quot; id limits:
+sectors_lines &amp;lt;- st_cast(sectors, &amp;quot;MULTILINESTRING&amp;quot;, group_or_split = FALSE)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;part-03---fix-geometries-intersection-and-calculate-the-monitoring-effort-on-each-coastal-sectors&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Part 03 - Fix geometries intersection and calculate the monitoring effort on each coastal sectors&lt;/h2&gt;
+&lt;p&gt;Some of the monitored coastline segments intersect more than one coastal sector, and this fact can cause confusion to the analysis. In order to fix it, this segments must be indentified and split using the sector intersection.&lt;/p&gt;
+&lt;p&gt;First thing to do is check for unvalid segments:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Check if there is any invalid geometry
+count(filter(merged.lines, compriment == 0))  ## the variable &amp;quot;compriment&amp;quot; correspond to the segment lenght in                                                  ## meters. If this value is equal to 0 this means that the geometry                                               ## can be removed from the analysis
+## Simple feature collection with 1 feature and 1 field (with 1 geometry empty)
+## geometry type:  LINESTRING
+## dimension:      XY
+## bbox:           xmin: NA ymin: NA xmax: NA ymax: NA
+## proj4string:    +proj=longlat +ellps=GRS80 +no_defs 
+## # A tibble: 1 x 2
+##       n         geometry
+##   &amp;lt;int&amp;gt; &amp;lt;LINESTRING [°]&amp;gt;
+## 1    48            EMPTY&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Knowing that there are 48 unvalid segments, they will need to be filtered out from the analysis. To perform the intersection analysis we will need to transform &lt;em&gt;Simple Features&lt;/em&gt; to &lt;em&gt;Spatial Lines DataFrames&lt;/em&gt; with the function &lt;em&gt;as_Spatial&lt;/em&gt; in the &lt;a href=&#34;https://cran.r-project.org/web/packages/sf/index.html&#34;&gt;sf&lt;/a&gt;. With this transformation the function &lt;em&gt;gIntersection&lt;/em&gt; in the &lt;a href=&#34;https://cran.r-project.org/web/packages/rgeos/index.html&#34;&gt;rgeos&lt;/a&gt; can be used to identify the intersections, and then finally transform it back to a &lt;em&gt;Simple Features&lt;/em&gt; to perform a spatial join with with the feature grid, importing the “Id” value for each segment.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(rgeos)
+gridS &amp;lt;- sf:::as_Spatial(st_transform(sectors, 5641))
+lineS &amp;lt;- sf:::as_Spatial(st_transform(filter(merged.lines, compriment != 0), 5641))
+clipLine &amp;lt;- gIntersection(lineS, gridS, byid = TRUE)
+clipLine &amp;lt;- clipLine %&amp;gt;% st_as_sf() %&amp;gt;% st_join(left = FALSE, (st_as_sf(gridS))[&amp;quot;id&amp;quot;]) # join points&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With the new summarized feature it is possible to calculate the individual lenght of each new segment (without intersection between different latitudinal sectors) summarizing the total length per sector which will populate a new a column named “tot_monitored length” in the initial sector feature.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;## Calculate individual segment lengths for the new summarized feature
+clipLine$length &amp;lt;- as.numeric(st_length(clipLine))/1000
+## Add the total monitored length for each sector
+sector_monit_length &amp;lt;- clipLine %&amp;gt;% group_by(id) %&amp;gt;% summarise(tot_monitored_lenght = sum(length))
+sectors&amp;lt;-merge(sectors, st_drop_geometry(sector_monit_length), by = &amp;quot;id&amp;quot;,all.x=TRUE) ## update the &amp;quot;sector&amp;quot; layer&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Visualise the result:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;## Check the five sectors with the highest monitoring effort:
+head(sectors[order(sectors$tot_monitored_lenght, decreasing = TRUE),])
+## Simple feature collection with 6 features and 2 fields
+## geometry type:  MULTIPOLYGON
+## dimension:      XY
+## bbox:           xmin: -48.76622 ymin: -26.6892 xmax: -44.78347 ymax: -23.3344
+## proj4string:    +proj=longlat +ellps=GRS80 +no_defs 
+##    id tot_monitored_lenght                       geometry
+## 19 19             95.90087 MULTIPOLYGON (((-48.76622 -...
+## 15 15             75.79817 MULTIPOLYGON (((-48.76622 -...
+## 18 18             67.32648 MULTIPOLYGON (((-48.76622 -...
+## 8   8             60.79107 MULTIPOLYGON (((-48.76622 -...
+## 20 20             57.19828 MULTIPOLYGON (((-48.76622 -...
+## 11 11             55.33324 MULTIPOLYGON (((-48.76622 -...
+
+## Check the five sectors with the lowest monitoring effort:
+head(sectors[order(sectors$tot_monitored_lenght, decreasing = FALSE),])
+## Simple feature collection with 6 features and 2 fields
+## geometry type:  MULTIPOLYGON
+## dimension:      XY
+## bbox:           xmin: -48.76622 ymin: -28.23757 xmax: -44.78347 ymax: -24.36664
+## proj4string:    +proj=longlat +ellps=GRS80 +no_defs 
+##    id tot_monitored_lenght                       geometry
+## 5   5             13.69308 MULTIPOLYGON (((-48.76622 -...
+## 13 13             18.32505 MULTIPOLYGON (((-48.76622 -...
+## 2   2             23.05482 MULTIPOLYGON (((-48.76622 -...
+## 16 16             24.33563 MULTIPOLYGON (((-48.76622 -...
+## 3   3             24.76599 MULTIPOLYGON (((-48.76622 -...
+## 4   4             29.84013 MULTIPOLYGON (((-48.76622 -...&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Finally, we can spatially visualise the difference between each latitudinal sectors with the ones with less monitoiring efforts represented in red and the ones with more effots represented in green:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(leaflet)
+bins &amp;lt;- c(0, 10, 20, 30, 50, 70, 100, Inf)
+pal &amp;lt;- colorBin(&amp;quot;RdYlGn&amp;quot;, domain = sectors$tot_monitored_lenght, bins = bins)
+
+leaflet(sf:::as_Spatial(sectors)) %&amp;gt;% addTiles() %&amp;gt;% 
+  addPolygons(color = &amp;quot;#444444&amp;quot;, weight = 1, smoothFactor = 0.5,
+              opacity = 1.0, fillOpacity = 0.5,
+              fillColor = ~pal(tot_monitored_lenght),
+              highlightOptions = highlightOptions(color = &amp;quot;white&amp;quot;, weight = 2,
+                                                  bringToFront = TRUE),
+              popup = ~tot_monitored_lenght 
+             )&lt;/code&gt;&lt;/pre&gt;
+&lt;div id=&#34;htmlwidget-1&#34; style=&#34;width:672px;height:480px;&#34; class=&#34;leaflet html-widget&#34;&gt;&lt;/div&gt;
+&lt;script type=&#34;application/json&#34; data-for=&#34;htmlwidget-1&#34;&gt;{&#34;x&#34;:{&#34;options&#34;:{&#34;crs&#34;:{&#34;crsClass&#34;:&#34;L.CRS.EPSG3857&#34;,&#34;code&#34;:null,&#34;proj4def&#34;:null,&#34;projectedBounds&#34;:null,&#34;options&#34;:{}}},&#34;calls&#34;:[{&#34;method&#34;:&#34;addTiles&#34;,&#34;args&#34;:[&#34;//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png&#34;,null,null,{&#34;minZoom&#34;:0,&#34;maxZoom&#34;:18,&#34;tileSize&#34;:256,&#34;subdomains&#34;:&#34;abc&#34;,&#34;errorTileUrl&#34;:&#34;&#34;,&#34;tms&#34;:false,&#34;noWrap&#34;:false,&#34;zoomOffset&#34;:0,&#34;zoomReverse&#34;:false,&#34;opacity&#34;:1,&#34;zIndex&#34;:1,&#34;detectRetina&#34;:false,&#34;attribution&#34;:&#34;&amp;copy; &lt;a href=\&#34;http://openstreetmap.org\&#34;&gt;OpenStreetMap&lt;\/a&gt; contributors, &lt;a href=\&#34;http://creativecommons.org/licenses/by-sa/2.0/\&#34;&gt;CC-BY-SA&lt;\/a&gt;&#34;}]},{&#34;method&#34;:&#34;addPolygons&#34;,&#34;args&#34;:[[[[{&#34;lng&#34;:[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],&#34;lat&#34;:[-28.495636824,-28.23757476575,-28.23757476575,-28.495636824,-28.495636824]}]],[[{&#34;lng&#34;:[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],&#34;lat&#34;:[-28.23757476575,-27.9795127075,-27.9795127075,-28.23757476575,-28.23757476575]}]],[[{&#34;lng&#34;:[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],&#34;lat&#34;:[-27.9795127075,-27.72145064925,-27.72145064925,-27.9795127075,-27.9795127075]}]],[[{&#34;lng&#34;:[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],&#34;lat&#34;:[-27.72145064925,-27.463388591,-27.463388591,-27.72145064925,-27.72145064925]}]],[[{&#34;lng&#34;:[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],&#34;lat&#34;:[-27.463388591,-27.20532653275,-27.20532653275,-27.463388591,-27.463388591]}]],[[{&#34;lng&#34;:[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],&#34;lat&#34;:[-27.20532653275,-26.9472644745,-26.9472644745,-27.20532653275,-27.20532653275]}]],[[{&#34;lng&#34;:[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],&#34;lat&#34;:[-26.9472644745,-26.68920241625,-26.68920241625,-26.9472644745,-26.9472644745]}]],[[{&#34;lng&#34;:[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],&#34;lat&#34;:[-26.68920241625,-26.431140358,-26.431140358,-26.68920241625,-26.68920241625]}]],[[{&#34;lng&#34;:[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],&#34;lat&#34;:[-26.431140358,-26.17307829975,-26.17307829975,-26.431140358,-26.431140358]}]],[[{&#34;lng&#34;:[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],&#34;lat&#34;:[-26.17307829975,-25.9150162415,-25.9150162415,-26.17307829975,-26.17307829975]}]],[[{&#34;lng&#34;:[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],&#34;lat&#34;:[-25.9150162415,-25.65695418325,-25.65695418325,-25.9150162415,-25.9150162415]}]],[[{&#34;lng&#34;:[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],&#34;lat&#34;:[-25.65695418325,-25.398892125,-25.398892125,-25.65695418325,-25.65695418325]}]],[[{&#34;lng&#34;:[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],&#34;lat&#34;:[-25.398892125,-25.1408300667499,-25.1408300667499,-25.398892125,-25.398892125]}]],[[{&#34;lng&#34;:[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],&#34;lat&#34;:[-25.1408300667499,-24.8827680084999,-24.8827680084999,-25.1408300667499,-25.1408300667499]}]],[[{&#34;lng&#34;:[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],&#34;lat&#34;:[-24.8827680084999,-24.6247059502499,-24.6247059502499,-24.8827680084999,-24.8827680084999]}]],[[{&#34;lng&#34;:[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],&#34;lat&#34;:[-24.6247059502499,-24.3666438919999,-24.3666438919999,-24.6247059502499,-24.6247059502499]}]],[[{&#34;lng&#34;:[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],&#34;lat&#34;:[-24.3666438919999,-24.1085818337499,-24.1085818337499,-24.3666438919999,-24.3666438919999]}]],[[{&#34;lng&#34;:[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],&#34;lat&#34;:[-24.1085818337499,-23.8505197754999,-23.8505197754999,-24.1085818337499,-24.1085818337499]}]],[[{&#34;lng&#34;:[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],&#34;lat&#34;:[-23.8505197754999,-23.5924577172499,-23.5924577172499,-23.8505197754999,-23.8505197754999]}]],[[{&#34;lng&#34;:[-48.7662226649999,-48.7662226649999,-44.783474665,-44.783474665,-48.7662226649999],&#34;lat&#34;:[-23.5924577172499,-23.3343956589999,-23.3343956589999,-23.5924577172499,-23.5924577172499]}]]],null,null,{&#34;interactive&#34;:true,&#34;className&#34;:&#34;&#34;,&#34;stroke&#34;:true,&#34;color&#34;:&#34;#444444&#34;,&#34;weight&#34;:1,&#34;opacity&#34;:1,&#34;fill&#34;:true,&#34;fillColor&#34;:[&#34;#FFFFBF&#34;,&#34;#FEE08B&#34;,&#34;#FEE08B&#34;,&#34;#FEE08B&#34;,&#34;#FC8D59&#34;,&#34;#FFFFBF&#34;,&#34;#FFFFBF&#34;,&#34;#D9EF8B&#34;,&#34;#D9EF8B&#34;,&#34;#FFFFBF&#34;,&#34;#D9EF8B&#34;,&#34;#FFFFBF&#34;,&#34;#FC8D59&#34;,&#34;#FFFFBF&#34;,&#34;#91CF60&#34;,&#34;#FEE08B&#34;,&#34;#FFFFBF&#34;,&#34;#D9EF8B&#34;,&#34;#91CF60&#34;,&#34;#D9EF8B&#34;],&#34;fillOpacity&#34;:0.5,&#34;smoothFactor&#34;:0.5,&#34;noClip&#34;:false},[35.8184353617669,23.0548167133741,24.7659886378299,29.8401270105745,13.6930840988839,30.5516372036213,36.7594831582133,60.7910667641981,50.0842901975882,36.9351111597452,55.3332414110109,38.1979140008277,18.3250478238633,30.8284978709684,75.7981702017037,24.3356256501222,47.2113847758834,67.3264811059651,95.9008672690657,57.198284556616],null,null,{&#34;interactive&#34;:false,&#34;permanent&#34;:false,&#34;direction&#34;:&#34;auto&#34;,&#34;opacity&#34;:1,&#34;offset&#34;:[0,0],&#34;textsize&#34;:&#34;10px&#34;,&#34;textOnly&#34;:false,&#34;className&#34;:&#34;&#34;,&#34;sticky&#34;:true},{&#34;color&#34;:&#34;white&#34;,&#34;weight&#34;:2,&#34;bringToFront&#34;:true}]}],&#34;limits&#34;:{&#34;lat&#34;:[-28.495636824,-23.3343956589999],&#34;lng&#34;:[-48.7662226649999,-44.783474665]}},&#34;evals&#34;:[],&#34;jsHooks&#34;:[]}&lt;/script&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#m %&amp;gt;% addLegend(pal = pal, values = ~tot_monitored_lenght, opacity = 0.7, title = NULL,
+#  position = &amp;quot;bottomright&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With the end of this code we have a spatial visualisation that tells the sectors with a higher (red polygons) and lower (light yellow polygons) monitoring effort. This result can be saved in a new shapefile and opened in any other geospatial software:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# st_write(sectors,&amp;quot;./sectors.shp&amp;quot;)  ## saving the sectors as a .shp&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Privacy Policy</title>
+      <link>/privacy/</link>
+      <pubDate>Thu, 28 Jun 2018 00:00:00 +0100</pubDate>
+      <guid>/privacy/</guid>
+      <description>&lt;p&gt;&amp;hellip;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Terms</title>
+      <link>/terms/</link>
+      <pubDate>Thu, 28 Jun 2018 00:00:00 +0100</pubDate>
+      <guid>/terms/</guid>
+      <description>&lt;p&gt;&amp;hellip;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>FOSS4G for Beach Litter Monitoring</title>
+      <link>/project/litter/</link>
+      <pubDate>Wed, 27 Apr 2016 00:00:00 +0000</pubDate>
+      <guid>/project/litter/</guid>
+      <description>&lt;p&gt;This project is a framework for a beach litter monitoring, based on free and open-source software (FOSS), which allows adjustments for any sampling design. The framework was developed by means of a GIS-project (QGIS), a GIS-collector (QField), and an R code, allowing further adjustments according to the area to be surveyed, and research questions. All facilities are FOSS, not implying any costs. The aim is to improve data collection, accessibility, and interoperability, and to help to fill the current existing gap between fieldwork and data analysis, preventing typos and allowing better data processing.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;./methodology.png&#34; alt=&#34;My picture&#34;&gt;
+&lt;em&gt;Image 1. The mobile-app QField in the fieldwork. (a) Record the item; (b–c) fill the attributes.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Therefore, less than an hour is expected from ending the fieldwork to the resulting up-to-date products. Results obtained from the open-source geospatial framework application produces baseline information on beach litter issues, such as amounts, sources, spatial and temporal patterns.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;./result.png&#34; alt=&#34;My picture&#34;&gt;
+&lt;em&gt;Image 2. Summary of graphical and descriptive results and the questions that these individual products respond. Colours are related to different polluting-activities, capital letters (A, B, C) represents different sites, and lower case letters (a, b) different beach areas.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;The adoption of the framework can facilitate the data collection by local and regional councils as it dispense any financial investments, and the results obtained from it can be applied to base management strategies. For researchers, it produces spatialized data from each item in tidy forms.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;./code.png&#34; alt=&#34;My picture&#34;&gt;
+&lt;em&gt;Image 3. Coloured cells indicate the steps to be run in the code, depending on the users purpose (reproduce results; first input of data; or, second data input onwards).&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;This project was submitted to the Environmental Monitoring and Assessment Journal (Manuscript status: &lt;em&gt;in review&lt;/em&gt;) and the full code is available  
+&lt;a href=&#34;https://github.com/JesSchattschneider/litter/blob/master/ReproducibleRcodeLitter.R&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Measuring the coastal complexity</title>
+      <link>/project/internal-project/</link>
+      <pubDate>Wed, 27 Apr 2016 00:00:00 +0000</pubDate>
+      <guid>/project/internal-project/</guid>
+      <description>&lt;p&gt;The coastline is the limit between the terrestrial and the maritime environment reflecting in its
+shape the interaction of continental and marine processes, presenting it as an interesting
+feature for coastal characterization. In this sense, this current project analyses by quantitative
+descriptors the morphological complexity of the south-southest brazilian coastline. Three
+different techniques are used to reach this objective, two of them are based in fractal theory
+and one in angular variation. The whole methodology is based in a reproducible R-code using public databases. In the characterization using fractal methods, the complexity of four
+coastline compartments of the study are measured by the fractal dimension (D). The adjustment of the fractal curve (R2) and the type of data used indicates that the step-divisor is the best method in this case. In a second moment of this project, the Angular Measurement Technique (AMT) is applied to the coastline without a previous compartmentalization, reaching to classify coastline segments in complexity classes. Nine different scale lengths (S) we considered in an hierarchic cluster indicating that the strudy area can be classified in four different complexity groups. Segments classified by Group 01 have low complexity being associated to straight coastline, Group 02 has an
+intermediate complexity while Group 03 and 04 have a higher complexity being segments of
+Group 04 normally associated to headlands and bays. Additionally,the relationship between
+this morphological classification is compared to the variability four coastal descriptors, the
+lithological diversity, the concentration of structural faults and the submerged and emerged
+slope.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;./coastalComplexity.png&#34; alt=&#34;My picture&#34;&gt;
+&lt;em&gt;Image 1. Methodological framework with a general visualisation of the input data in the first row (lithology, geological faults and bathimetric and topographic data, respectively), and on the second row is a sampled of the scheme used to obtain the four coastal descriptor for each costal segment (Shannon index, concentration of faults, submerged and emerged slope, respectively).&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Principal Component Analysis (PCA) shows that the lithological diversity and the
+concentration of faults control the coastline morphology in the scale evaluated by this study,
+possibly reflecting the influence of the Serra do Mar proximity in some segments. However,
+the smoothed curve of each complexity group obtained by the generalized additive model
+(GAM) from the individual bathymetric and altimetric profiles shows a variation between the
+pattern observed for each group, indicating a relation with the morphological expression of
+the coastline.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;./pca.png#center&#34; alt=&#34;My picture&#34;&gt;
+&lt;em&gt;Image 2. Principal Component Analysis for the four complexity groups (represented by points) in relations to the four coastal descriptors (represented by arrows being translated from portuguese to english as follow: Decliv. Sub = Submerged Slope; Decliv. Emersa = Emerged Slope; Div. Geo = Shannon Index; Conc. Falhas = Fault Concentration). This analysis highlights the geological diversity on controlling the morphological expression of the coastline in mesoscale&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;The full dataset and the final code are freely available in my 
+&lt;a href=&#34;https://github.com/JesSchattschneider/Dissertation.git&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;github&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>An open-source geospatial framework for beach litter monitoring</title>
+      <link>/publication/journal-article/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>/publication/journal-article/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>How to Compare Covid-19 Curves in Python</title>
+      <link>/post/covid/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>/post/covid/</guid>
+      <description>&lt;hr&gt;
+&lt;h1 id=&#34;motivation&#34;&gt;Motivation&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;Work with Covid-19 dataset&lt;/li&gt;
+&lt;li&gt;Compare the curve from my home country Brazil (no social distance and insufficient testing - &lt;a href=&#34;https://www.theguardian.com/world/2020/may/06/brazil-coronavirus-deaths-covid-19-bolsonaro&#34;&gt;https://www.theguardian.com/world/2020/may/06/brazil-coronavirus-deaths-covid-19-bolsonaro&lt;/a&gt;) and New Zealand (four weeks of lockdown and with a recognized elimination strategy - &lt;a href=&#34;https://edition.cnn.com/2020/04/28/asia/new-zealand-coronavirus-outbreak-elimination-intl-hnk/index.html&#34;&gt;https://edition.cnn.com/2020/04/28/asia/new-zealand-coronavirus-outbreak-elimination-intl-hnk/index.html&lt;/a&gt;)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;source&#34;&gt;Source:&lt;/h1&gt;
+&lt;p&gt;To structure the code below two main references were used:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.dataquest.io/blog/tutorial-time-series-analysis-with-pandas/&#34;&gt;https://www.dataquest.io/blog/tutorial-time-series-analysis-with-pandas/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://opensource.com/article/20/4/python-data-covid-19&#34;&gt;https://opensource.com/article/20/4/python-data-covid-19&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;coding&#34;&gt;Coding:&lt;/h1&gt;
+&lt;p&gt;Import libraries&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python,&#34;&gt;import pycountry
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Import the dataset&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Find additional information about the dataset here: &lt;a href=&#34;https://github.com/datasets/covid-19&#34;&gt;https://github.com/datasets/covid-19&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+URL_DATASET = r&#39;https://raw.githubusercontent.com/datasets/covid-19/master/data/countries-aggregated.csv&#39;
+df1 = pd.read_csv(URL_DATASET)
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Select only the data needed and get it in the right shape to the analysis&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;## Filtering and Wrangling
+df1 = df1.filter([&amp;quot;Country&amp;quot;, &amp;quot;Date&amp;quot;, &amp;quot;Confirmed&amp;quot;]) ## Select only the columns of interest
+bra_nz = df1.loc[df1[&amp;quot;Country&amp;quot;].isin([&#39;Brazil&#39;,&#39;New Zealand&#39;])]  ## Select the countries to be analysed
+bra_nz[&amp;quot;Date&amp;quot;] = pd.to_datetime(bra_nz[&amp;quot;Date&amp;quot;]) ## Set the right format to Date column
+bra_nz=bra_nz.pivot(index=&#39;Date&#39;, columns=&#39;Country&#39;, values=&#39;Confirmed&#39;) ## Reshape the dataset
+## Define columns
+data_columns = [&#39;Brazil&#39;, &#39;New Zealand&#39;] 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Perform a log transformation on the number of confirmed cases and set a rolling window of seven days&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;## And index retrieveing month
+## and rolling
+bra_nz_7d = np.log(bra_nz[data_columns]).rolling(7, center=True).mean() ## The logarithmic scale improves the rate                                                                         ## change analysis and the rolling window                                                                          ## smooths the graph 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Plot the curves and a red vertical line indicating the first day of New Zealand lockdown&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot 7-day rolling mean time series for the confirmed cases of Brazil and New Zealand:
+fig, ax = plt.subplots()
+ax.plot(bra_nz_7d[&#39;Brazil&#39;], linewidth=2, label=&#39;7-d Rolling Brazil&#39;, color=&#39;green&#39;)
+ax.plot(bra_nz_7d[&#39;New Zealand&#39;], linewidth=2, label=&#39;7-d Rolling New Zealand&#39;, color=&#39;blue&#39;)
+ax.axvline(pd.to_datetime(&#39;2020-03-26&#39;), color=&#39;r&#39;, linestyle=&#39;--&#39;, lw=2)
+
+# Set x-ticks to yearly interval and add legend and labels
+ax.legend()
+ax.set_ylabel(&#39;Confirmed Cases&#39;)
+ax.set_title(&#39;Comparing Covid-19 Trends- Brazil and New Zealand&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;index.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Quantitative Caracterization of the Morphometric Complexity of South-Southest Brazilian Coastline using Fractal Methods</title>
+      <link>/publication/complexity/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>/publication/complexity/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

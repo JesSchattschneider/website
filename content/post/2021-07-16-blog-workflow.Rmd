@@ -1,0 +1,167 @@
+---
+title: "Docker + MongoDB + Python workflow"
+author: "Jessica Leiria Schattschneider"
+output: html
+  blogdown::html_page:
+    toc: true
+image:
+  caption: 'Image credit: [**Unsplash**](https://unsplash.com/photos/CpkOjOcXdUY)'
+  focal_point: ""
+  placement: 2
+  preview_only: false
+date: "2021-07-16"
+categories: ["workflow structure"]
+tags: ["mongo", "docker", "python", "workflow"]
+summary: "A template for starting data science projects"
+subtitle: "" 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Mongo Express is a web-based MongoDB administration interface that also can be run as a containerized application.
+
+
+# Motivation
+In my first 10 months working as data scientist I've been learning a lot of many
+tools that can make my work much more compatible and robust like Mongo and Docker. MongoDB is an unstructured database that can be quite useful for datasets that don't always follow the same structure. 
+Mongo express
+Docker is a container system where you can wrap your operational system and all the dependendencies with their specific versions in a container that can be built by any other user in the world what this means is that your client/colleague will run your code in an environment exactly like yours and you will never need to worry about your code not running in a different computer! 
+
+Oh, but was running in my computer... -- never again with Docker!
+
+Have access to this tools and to workmates that help you to give the first start is amazing but process all this new worlds and figure out how to integrate them to your work structure can be overwhelming. Here, I share how I am organizing my new data science projects using this tools. Figure out the tools to use when a new project comes also requires time and in my experience have a template structure prepared can help a lot to achieve better goals and avoid the anxiety of starting from zero again and again. 
+
+
+# Data available:
+??
+
+# Set env: 
+In this tutorial I am using VScode in a Windows machine
+VScode: install
+
+Mongo: install (Linux/Windows)
+
+Docker: install (Linux/Windows)
+
+Create an empty work folder
+Open VScode and open it (first image)
+
+Install Docker Extension (second image)
+
+Go back to VSCode Explorer (first icon in the vertical bar in the left side or Ctrl + Shift + E)
+
+# First Step - Docker:
+
+Go to "New terminal" in the Terminal Menu and check how many docker containers are running
+
+```{bash, eval = FALSE}
+
+docker ps
+
+```
+
+
+If you don't have any containers running the response to the command above will be empty like this:
+
+(third image)
+
+## Run Mongo inside a Docker-composer file
+
+Inside your root folder create your docker-composer file, name it docker-compose.yml and type the following lines:
+
+```{bash}
+version: '3.1'
+
+services:
+    mongo-service:
+        image: mongo
+        restart: always
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: example
+        ports:
+            - 27017:27017 # syntax: HOST:CONTAINER
+
+````
+
+The first line defines the compose file version. In this example we are using version 3.1 but you can check for other versions and their specifications here.
+
+In the second line we start defining the services that our container will build. The first one is the mongo-service created from the Docker official image of mongo.  We are going to use the [default MongoDB port](https://docs.mongodb.com/manual/reference/default-mongodb-port/) and map the local port 27017 to internal port 27017. 
+
+
+Now that the service that creates a mongoDB was defined we can define the second service of our docker-composer.yml with the following lines of code 
+
+```{bash}
+    mongo-express:
+        image: mongo-express
+        restart: always
+        ports:
+            - 8000:8081 # syntax: HOST:CONTAINER 
+        environment:
+            ME_CONFIG_MONGODB_ADMINUSERNAME: root
+            ME_CONFIG_MONGODB_ADMINPASSWORD: example
+            ME_CONFIG_MONGODB_SERVER: mongo-service
+            ME_CONFIG_BASICAUTH_USERNAME: user
+            ME_CONFIG_BASICAUTH_PASSWORD: password
+
+```
+
+
+In this last chunk we are using the Docker official image of mongo-express to create the second service of our container. For this service we mapped the local port 8000 to internal port 8081. 
+
+In the last lines are defined the username and password authentication to be informed when accessing the mongo-express service from localhost:8081.
+
+Your final docker-composer.yml file should look like this:
+
+Note: make sure that all services follow the same indentation!
+
+Save your docker-composer.yml and run:
+
+```{bash}
+docker-compose up -d
+```
+
+docker-compose up will start your container and -d (same as --detach) will leave it running in the background.
+
+Now, when you run docker ps in the terminal you will notice that you have two new containers running:
+
+You can also check the Mongo Express web interface using the server IP (localhost:8000)
+
+## Connect to your python code:
+
+### Create virtual env (venv): 
+
+python -m venv .venv (for Windows, [check](https://code.visualstudio.com/docs/python/environments) how to set env for other OS)
+
+### Activate venv:
+
+.\.venv\Scripts\activate 
+
+Make sure that your venv is activated and the active python interpreter in the bottom left is from venv. If ths is not the case is not activated select you the interpreter manually: Ctrl + Shift + P -> Select Python Interpreter
+
+fifth image
+
+
+### Requirements.txt
+
+create the a requirements.txt file type the following line and close the file:
+
+pymongo
+
+### Install requirements.txt
+
+In the terminal:
+pip install -r .\requirements.txt
+
+## Create a db.py
+
+This code will connect to the database running in your container and store some files on it. Mongo collections can be used to store files <16Mb. In case you need to store larger files the way to go is to use GridFS. 
+
+
+
+
+
+
