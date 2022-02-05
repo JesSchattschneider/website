@@ -10,9 +10,9 @@ featured: false
 #   focal_point: ""
 # projects: []
 # subtitle: Learn how to blog in Academic using Jupyter notebooks
-summary: Basic code to compare Covid-19 curves 
-tags: ["data wrangling", "covid", "pandas"]
-title: How to Compare Covid-19 Curves in Python
+summary: Creating Covid-19 curves 
+tags: ["data wrangling", "covid", "pandas", "how to"]
+title: Comparing Covid-19 Curves in Python
 ---
 
 ---

@@ -1,0 +1,126 @@
+---
+title: "Installing Pop!_OS 21.10"
+author: "Jessica Leiria Schattschneider"
+output:
+  blogdown::html_page:
+    toc: true
+image:
+  preview_only: false
+date: "2022-02-05"
+categories: ["R"]
+tags: ["data science", "how to", "FOSS"]
+summary: "Getting rid of Windows 11 S and be free with POP! OS"
+subtitle: "" 
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#motivation">Motivation</a></li>
+<li><a href="#my-computers-specification">My computer’s specification</a></li>
+<li><a href="#format-computer-and-install-pop_os-21.10">Format computer and install Pop!_OS 21.10</a>
+<ul>
+<li><a href="#download-pop_os-21.10">Download Pop!_OS 21.10</a></li>
+<li><a href="#create-a-bootable-drive">Create a bootable drive</a></li>
+<li><a href="#disable-secure-boot-in-your-bios-and-discover-the-right-key-to-press">Disable Secure Boot in your BIOS and discover the right key to press</a></li>
+</ul></li>
+<li><a href="#install-pop-os">Install Pop! OS</a></li>
+<li><a href="#bonus">Bonus</a></li>
+</ul>
+</div>
+
+<div id="motivation" class="section level1">
+<h1>Motivation</h1>
+<p>Install the new Linux distro Pop!_OS 21.10.</p>
+<p>Last week, I picked up my new PC from store (after 2 years without a personal computer) and I was thrilled to start using it and develop my data science projects on it. However, Windows 11 S made my first experience with my new computer completely unpleasant, so I knew that I should get rid of it straight away! Encouraged by a friend, I decided to install the new Pop!_OS 21.10 a free and open-source Linux distribution, based upon Ubuntu, designed to be easy to use for Linux beginners.</p>
+<p>Note that I installed the Pop!_OS in a new PC where I had no data stored on it. In case you have data in your PC that you DO NOT want to lose, it is important to make a backup first!</p>
+</div>
+<div id="my-computers-specification" class="section level1">
+<h1>My computer’s specification</h1>
+<table>
+<thead>
+<tr class="header">
+<th>Class</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>system</td>
+<td>Inspiron 15 3511 (0AB0)</td>
+</tr>
+<tr class="even">
+<td>memory</td>
+<td>1MiB BIOS</td>
+</tr>
+<tr class="odd">
+<td>processor</td>
+<td>11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz</td>
+</tr>
+<tr class="even">
+<td>memory</td>
+<td>8GiB System Memory</td>
+</tr>
+<tr class="odd">
+<td>display</td>
+<td>TigerLake-LP GT2 [Iris Xe Graphics]</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="format-computer-and-install-pop_os-21.10" class="section level1">
+<h1>Format computer and install Pop!_OS 21.10</h1>
+<div id="download-pop_os-21.10" class="section level2">
+<h2>Download Pop!_OS 21.10</h2>
+<p>Go to <a href="https://pop.system76.com/" class="uri">https://pop.system76.com/</a> and in DOWNLOAD choose the right option according to your graphics drive. In my case, I downloaded the first option.</p>
+<p><img src="/post/formating_pc/images/download_pop_os.png" /></p>
+</div>
+<div id="create-a-bootable-drive" class="section level2">
+<h2>Create a bootable drive</h2>
+<p>After downloading the <em>.iso image</em> the next step is to create a bootable drive. I had to use another computer to complete this step, as Windows 11 S didn’t allow me to install software from online sources and I did not want spend time finding a workaround for that.</p>
+<p>So, if you are in a <em>Windows</em> machine, simply download with <a href="https://rufus.ie/en/">Rufus Software</a>, add a USB drive (make sure to use an empty drive or that you have a backup of what is stored on it, as all data will be <strong>deleted from your USB drive</strong> on this step), run Rufus and select your USB drive on the <em>Device</em> option and the POP!_OS.iso image (downloaded in the step above) on <em>Boot selection</em> and press START.</p>
+<p><img src="/post/formating_pc/images/rufus.png" /></p>
+<p>If you are already using <em>Linux</em> OS (Ubuntu, for example) you can create a bootable drive <a href="https://fossbytes.com/create-bootable-usb-media-from-iso-ubuntu/">without the need of installing external software</a>, following the steps below:</p>
+<ul>
+<li><p>Open the dash menu. If you are using the latest version, use the left pane to open the show applications.</p></li>
+<li><p>Open the Startup Disk Creator application by typing or searching in the search box.</p></li>
+<li><p>Select the source ISO file and specific device for bootable media. If you have chosen the wrong device or ISO, click other to change your selection.</p></li>
+<li><p>After verifying the ISO file and, click on Make Startup Disk to create a new Bootable USB startup disk in UBUNTU Linux.</p></li>
+<li><p>Finally, a prompt will appear asking you to confirm your selection. Confirm the prompt to start the process.</p></li>
+</ul>
+</div>
+<div id="disable-secure-boot-in-your-bios-and-discover-the-right-key-to-press" class="section level2">
+<h2>Disable Secure Boot in your BIOS and discover the right key to press</h2>
+<p>Before restarting your computer and use your bootable drive to install the POP! OS on your machine it is important to disable the <em>Secure Boot</em> mode. Secure boot is a security standard developed by members of the PC industry to help make sure that a device boots using only software that is trusted by the Original Equipment Manufacturer (OEM). Don’t worry, it is safe to disable the Secure Boot, you can check <a href="https://askubuntu.com/questions/843656/is-it-safe-to-disable-secure-boot">this</a> and <a href="https://www.linux.org/threads/does-anyone-know-if-it-is-safe-to-disable-secure-boot.30468/">this</a> discussion for more information about the topic.</p>
+<p><a href="https://www.gigabyte.com/us/Support/FAQ/3001">These are the steps</a> to follow to disable secure boot mode:</p>
+<ul>
+<li><p>Boot and press [F2] to enter BIOS.</p></li>
+<li><p>Go to [Security] tab &gt; [Default Secure boot on] and set as [Disabled].</p></li>
+<li><p>Go to [Save &amp; Exit] tab &gt; [Save Changes] and select [Yes].</p></li>
+<li><p>Go to [Security] tab and enter [Delete All Secure Boot Variables] and select [Yes] to proceed.</p></li>
+<li><p>Then, select [OK] to restart.</p></li>
+</ul>
+<p>Now, to finally install Pop! OS we will need to boot the PC from our bootable drive (i.e.: from the bootable USB drive created in the step above).
+When a computer is starting up, the user can access the Boot Menu by pressing one of several keyboard keys. Common keys for accessing the Boot Menu are Esc, F2, F10 or F12. In my case, the key to access the Boot Menu is F12. To make sure that this works for you, restart you PC, and press F12 until you see something like this:</p>
+<p><img src="/post/formating_pc/images/boot_menu.jpg" /></p>
+<p>If the bootable window above does appear, you might need to do some search to find the right key for your computer.</p>
+</div>
+</div>
+<div id="install-pop-os" class="section level1">
+<h1>Install Pop! OS</h1>
+<p>In the boot menu choose to boot from your bootable media. After a few seconds your computer should boot and you will see the following window:</p>
+<p><img src="/post/formating_pc/images/pop.png" /></p>
+<p>You can try Pop! OS first or proceed directly to the installation:</p>
+<p><img src="/post/formating_pc/images/pop_install.png" /></p>
+<p>The installation is pretty straightforward, in my case I selected the <em>Clean Install</em> as I did not want to resize my partitions and I wanted to remove Windows completely from my machine, but you might want to look into <a href="https://linoxide.com/install-pop-os-20-04/">this</a> post if you want to manage your partitions or <a href="https://www.youtube.com/watch?v=CozK7sJ8UMs">this</a> video in case you also want to keep a partition with Windows installed (dual boot).</p>
+<p><img src="/post/formating_pc/images/complete_pop.png" /></p>
+<p>Done! Welcome to a free and open experience &lt;3</p>
+</div>
+<div id="bonus" class="section level1">
+<h1>Bonus</h1>
+<p>If you are a R user and also love using spatial libraries in your projects like me, you might need to install some Linux packages in order to use your favorite libraries (this is also applicable for QGIS and spatial Python libraries).</p>
+<p>Open the terminal (shortcut: SUPER + t) and copy the following line:</p>
+<p><code>sudo apt-get install -y libudunits2-dev libssl-dev libgdal-dev libfontconfig1-dev</code></p>
+<p>Now should be all good to run <code>install.packages(c("mapview", "lwgeom", "leaflet", "sf"))</code> without running into errors :)</p>
+</div>

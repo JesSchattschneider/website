@@ -1,5 +1,5 @@
 ---
-title: "How to Compare Monitoring Effort Between Latitudinal Sectors"
+title: "Comparing Monitoring Effort Between Latitudinal Sectors"
 author: "Jessica Leiria Schattschneider"
 output:
   blogdown::html_page:
@@ -12,7 +12,7 @@ image:
 date: "2020-05-06"
 categories: ["R"]
 tags: ["coastal monitoring", "how to", "biological data"]
-summary: "How to compare monitoring effort between latitudinal sectors"
+summary: "Using R to visualise and compare monitoring efforts between different latitudinal sectors"
 subtitle: "" 
 ---
 
@@ -159,7 +159,7 @@ leaflet(sf:::as_Spatial(sectors)) %>% addTiles() %>%
 #  position = "bottomright")
 ```
 
-With the end of this code we have a spatial visualisation that tells the sectors with a higher (red polygons) and lower (light yellow polygons) monitoring effort. This result can be saved in a new shapefile and opened in any other geospatial software:
+At the end of this code we have a spatial visualisation that shows the sectors with a higher (red polygons) and lower (light yellow polygons) monitoring effort. This result can be saved in a new shapefile and opened in any other geospatial software:
 ```{r}
 # st_write(sectors,"./sectors.shp")  ## saving the sectors as a .shp
 ```
