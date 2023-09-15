@@ -5,6 +5,3 @@ draft: false
 ---
 
 Welcome to Project 1. This is a brief introduction to the project.
-
-# - [Post 1]
-# - [Post 2]
