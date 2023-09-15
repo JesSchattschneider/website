@@ -27,10 +27,14 @@ content:
   filter_button:
   - name: All
     tag: '*'
-  - name: GIS
-    tag: GIS
-  - name: Oceanography
-    tag: oceanography
+  - name: R
+    tag: r
+  - name: Python
+    tag: python
+  - name: Reporting
+    tag: reporting
+  - name: Cloud computing
+    tag: cloud_computing
 
 design:
   # Choose how many columns the section has. Valid values: '1' or '2'.
