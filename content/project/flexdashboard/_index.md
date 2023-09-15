@@ -6,5 +6,5 @@ draft: false
 
 Welcome to Project 1. This is a brief introduction to the project.
 
-- [Post 1](post-1)
-- [Post 2](post-2)
+# - [Post 1]
+# - [Post 2]
