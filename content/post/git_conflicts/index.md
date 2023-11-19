@@ -2,10 +2,11 @@
 slug: resolve-conflicts-in-git
 title: Resolve conflicts in Git
 authors: [leiria schattschneider]
-tags: [data lake, documentation, azure]
+tags: [git, how to]
+summary: How to resolve git conflicts during merge requests 
 ---
 
-Conflicts can happen in various ways when working in a Git repository. This post covers how conflicts can be resolved when from new pull requests.
+Conflicts can happen in various ways when working in a Git repository. This post covers how conflicts can be resolved from new pull requests.
 
 ## Make a pull request
 
@@ -42,7 +43,6 @@ Step 4: Commit the Merge (if necessary): After resolving conflicts, you may need
 `git commit -m "Merge dev into master"`
 
 Step 5: Push the Changes: Once the merge is complete and you are satisfied with the result, push the changes to the remote repository:
-
 
 `git push origin master`
 
