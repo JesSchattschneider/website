@@ -2,7 +2,6 @@
 slug: course-get-started-with-data-engineering-on-Azure
 title: Get started with data engineering on Azure
 authors: [leiria schattschneider]
-tags: [data lake, documentation, azure]
 summary: `Get started with data engineering on Azure` course - personal notes
 ---
 
