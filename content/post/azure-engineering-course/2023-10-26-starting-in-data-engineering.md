@@ -4,7 +4,6 @@ title: Get started with data engineering on Azure
 authors: [leiria schattschneider]
 tags: [data lake, documentation, azure]
 summary: `Get started with data engineering on Azure` course - personal notes
-
 ---
 
 In this post are the key concepts I learned while doing the [Get started with data engineering on Azure](https://learn.microsoft.com/en-us/training/paths/get-started-data-engineering/) training course from Azure.
