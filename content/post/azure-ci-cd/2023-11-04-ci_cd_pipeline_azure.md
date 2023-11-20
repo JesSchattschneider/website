@@ -51,7 +51,7 @@ According to [Azure]((https://learn.microsoft.com/en-us/azure/app-service/deploy
 
 Create slots in Azure is simple. After creating your Web App resource in Azure, go to *Deployment Slots* and *+ Add* as many slots as needed
 
-![Alt text](image-122.png)
+![Alt text](image-12.png)
 
 After doing this, you can go back to the resource group where the web app was created to check that the slots are now available
 
