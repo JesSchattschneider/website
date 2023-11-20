@@ -1,7 +1,7 @@
 ---
 authors:
 - admin
-bio: Marine Data Scientist and GIS analyst
+bio: Environmental Data Scientist
 education:
   courses:
   - course: MSc in Coastal Oceanography
@@ -15,9 +15,10 @@ education:
     year: 2010
 email: "jesica.leiria@gmail.com"
 interests:
-- Geoprocessing and Open source GIS tools
-- Spatial visualisation
-- Database
+- Cloud computing
+- Data pipelines
+- REST API
+- No-SQL
 - Data wrangling
 - Environmental data
 social:

@@ -2,7 +2,8 @@
 slug: migration-gitlab-github
 title: Migrating gitlab project to github
 authors: [leiria schattschneider]
-tags: [git]
+tags: [git, how to]
+summary: How to migrate Gitlab repositories to to Github
 ---
 
 ## Motivation
