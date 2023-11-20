@@ -20,7 +20,7 @@ experience:
     company: Cawthron Institute
     location: "Nelson - New Zealand"
     date_start: 2020-09-15
-    date_end: present
+    # date_end: present
     Responsibilities include: Conducting data analysis and development of robust data pipelines for various environmental projects. Additionally, leading the architectural design of internal data infrastructure utilizing Azure Cloud services to optimize application deployments and promote the institute's adherence to FAIR principles.
 
   - title: Geospatial Intern
